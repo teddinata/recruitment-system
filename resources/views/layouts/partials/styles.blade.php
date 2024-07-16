@@ -1,0 +1,12 @@
+<link rel="stylesheet" href="{{ asset('frontend-new/css/bootstrap.min.css') }}">
+<link rel="stylesheet" href="{{ asset('frontend-new/css/owl.carousel.min.css') }}">
+<link rel="stylesheet" href="{{ asset('frontend-new/css/flaticon.css') }}">
+<link rel="stylesheet" href="{{ asset('frontend-new/css/price_rangs.css') }}">
+<link rel="stylesheet" href="{{ asset('frontend-new/css/slicknav.css') }}">
+<link rel="stylesheet" href="{{ asset('frontend-new/css/animate.min.css') }}">
+<link rel="stylesheet" href="{{ asset('frontend-new/css/magnific-popup.css') }}">
+<link rel="stylesheet" href="{{ asset('frontend-new/css/fontawesome-all.min.css') }}">
+<link rel="stylesheet" href="{{ asset('frontend-new/css/themify-icons.css') }}">
+<link rel="stylesheet" href="{{ asset('frontend-new/css/slick.css') }}">
+<link rel="stylesheet" href="{{ asset('frontend-new/css/nice-select.css') }}">
+<link rel="stylesheet" href="{{ asset('frontend-new/css/style.css') }}">
