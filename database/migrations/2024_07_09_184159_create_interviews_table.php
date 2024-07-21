@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('interviews', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_apply_job_id');
-            $table->date('interview_date')->nullable();
+            $table->dateTime('interview_date')->nullable();
             $table->string('google_meet_link')->nullable();
             $table->text('notes')->nullable();
             $table->enum('is_invited', ['yes', 'no'])->nullable();

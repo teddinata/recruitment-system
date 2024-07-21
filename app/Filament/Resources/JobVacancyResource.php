@@ -92,10 +92,14 @@ class JobVacancyResource extends Resource
                             ->required()
                             ->placeholder('Enter qualifications')
                             ->rules(['required']),
-                        Forms\Components\Datepicker::make('valid_until')
+                        Datepicker::make('valid_until')
                             ->label('Valid Until')
                             ->required()
                             ->rules(['required']),
+                        // Forms\Components\Datepicker::make('valid_until')
+                        //     ->label('Valid Until')
+                        //     ->required()
+                        //     ->rules(['required']),
                         Forms\Components\Select::make('experience')
                         ->label('Experience')
                         ->options([

@@ -2,25 +2,28 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\RecruitmentResource\Pages;
-use App\Filament\Resources\RecruitmentResource\RelationManagers;
-use App\Models\Recruitment;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Models\Recruitment;
+use App\Models\UserApplyJob;
+use Filament\Tables\Columns;
+use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\Section;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Models\UserApplyJob;
-use Filament\Tables\Filters\Filter;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Forms\Components\Section;
-use Filament\Tables\Columns;
-use Illuminate\Support\Facades\Storage;
-use Filament\Forms\Components\{Card, FileUpload, TextInput, Textarea, DatePicker, Radio, Select};
-use Filament\Forms\Components\{RichEditor, Table as TableComponent};
+use App\Filament\Resources\RecruitmentResource\Pages;
+use App\Filament\Resources\RecruitmentResource\RelationManagers;
+use Filament\Forms\Components\{DateTimePicker, RichEditor, Table as TableComponent};
+use App\Filament\Resources\RecruitmentResource\Pages\EditRecruitment;
 use App\Filament\Resources\RecruitmentResource\RelationManagers\InterviewsRelationManager;
+use Filament\Forms\Components\{Card, FileUpload, TextInput, Textarea, DatePicker, Group, Radio, Select};
 
 
 
@@ -42,102 +45,126 @@ class RecruitmentResource extends Resource
                     ->description('Silahkan isi form berikut untuk menambahkan pendaftar.')
                     ->schema([
                         Forms\Components\FileUpload::make('cv_path')
-                            ->label('PDF')
+                            ->label('Upload CV')
                             ->acceptedFileTypes(['application/pdf'])
                             ->previewable(true)
                             ->rules(['nullable', 'mimes:pdf', 'max:2048'])
-                            ->disabled(),
+                            ->disabledOn([Pages\EditRecruitment::class]),
                         Forms\Components\Select::make('job_vacancy_id')
                             ->label('Job Vacancy')
                             ->relationship('jobVacancy', 'title')
                             ->required()
                             ->placeholder('Select job vacancy')
                             ->rules(['required'])
-                            ->disabled(),
+                            ->disabledOn([Pages\EditRecruitment::class]),
                         Forms\Components\TextInput::make('first_name')
                             ->label('First Name')
                             ->required()
                             ->placeholder('Enter first name')
                             ->rules(['required', 'max:255'])
-                            ->disabled(),
+                            ->disabledOn([Pages\EditRecruitment::class]),
                         Forms\Components\TextInput::make('last_name')
                             ->label('Last Name')
                             ->required()
                             ->placeholder('Enter last name')
                             ->rules(['required', 'max:255'])
-                            ->disabled(),
+                            ->disabledOn([Pages\EditRecruitment::class]),
                         Forms\Components\TextInput::make('email')
                             ->label('Email')
                             ->required()
                             ->placeholder('Enter email')
                             ->rules(['required', 'email', 'max:255'])
-                            ->disabled(),
+                            ->disabledOn([Pages\EditRecruitment::class]),
                         Forms\Components\TextInput::make('phone_number')
                             ->label('Phone Number')
                             ->required()
                             ->placeholder('Enter phone number')
                             ->rules(['required', 'max:255'])
-                            ->disabled(),
+                            ->disabledOn([Pages\EditRecruitment::class]),
                         Forms\Components\TextInput::make('address')
                             ->label('Address')
                             ->required()
                             ->placeholder('Enter address')
                             ->rules(['required', 'max:255'])
-                            ->disabled(),
+                            ->disabledOn([Pages\EditRecruitment::class]),
                         Forms\Components\TextInput::make('place_of_birth')
                             ->label('Place of Birth')
                             ->required()
                             ->placeholder('Enter place of birth')
                             ->rules(['required', 'max:255'])
-                            ->disabled(),
+                            ->disabledOn([Pages\EditRecruitment::class]),
                         Forms\Components\DatePicker::make('date_of_birth')
                             ->label('Date of Birth')
                             ->required()
                             ->placeholder('Enter date of birth')
                             ->rules(['required'])
-                            ->disabled(),
-                        Forms\Components\TextInput::make('education')
-                            ->label('Education')
+                            ->disabledOn([Pages\EditRecruitment::class]),
+                        Forms\Components\Select::make('education')
+                            ->label('Last Education')
                             ->required()
                             ->placeholder('Enter education')
-                            ->rules(['required', 'max:255'])
-                            ->disabled(),
+                            ->options([
+                                'SMA/SMK' => 'SMA/SMK',
+                                'D3' => 'D3',
+                                'S1' => 'S1',
+                                'S2' => 'S2',
+                            ])
+                            ->native(false)
+                            ->disabledOn([Pages\EditRecruitment::class]),
                         Forms\Components\TextInput::make('major')
                             ->label('Major')
                             ->required()
                             ->placeholder('Enter major')
                             ->rules(['required', 'max:255'])
-                            ->disabled(),
-                        Forms\Components\TextInput::make('join_date')
+                            ->disabledOn([Pages\EditRecruitment::class]),
+                        Forms\Components\Select::make('join_date')
                             ->label('Join Date')
                             ->required()
                             ->placeholder('Enter join date')
-                            ->rules(['required'])
-                            ->disabled(),
+                            ->options(function () {
+                                $dates = [];
+                                // $currentDate = date('Y');
+                                for ($i = 1; $i <= 31; $i++) {
+                                    // $dates[$currentDate - $i] = $currentDate - $i;
+                                    $dates[$i] = $i . " Hari";
+                                }
+                                return $dates;
+                            })
+                            ->native(false)
+                            ->disabledOn([Pages\EditRecruitment::class]),
                         Forms\Components\TextInput::make('linkedin_url')
                             ->label('Linkedin')
                             ->required()
                             ->placeholder('Enter linkedin')
                             ->rules(['required', 'max:255'])
-                            ->disabled(),
-                        Forms\Components\TextInput::make('job_source')
+                            ->disabledOn([Pages\EditRecruitment::class]),
+                        Forms\Components\Select::make('job_source')
                             ->label('Job Source')
                             ->required()
-                            ->placeholder('Enter job source')
-                            ->rules(['required', 'max:255'])
-                            ->disabled(),
+                            ->options([
+                                'Instagram' => 'Instagram',
+                                'Facebook' => 'Facebook',
+                                'Twitter' => 'Twitter',
+                                'Linkedin' => 'Linkedin',
+                                'Jobstreet' => 'Jobstreet',
+                                'Karir.com' => 'Karir.com',
+                                'Jobindo.com' => 'Jobindo.com',
+                            ])
+                            ->native(false)
+                            ->placeholder('Where did you find this job?')
+                            ->disabledOn([Pages\EditRecruitment::class]),
                         Forms\Components\TextInput::make('old_company')
                             ->label('Old Company')
                             ->required()
                             ->placeholder('Enter old company')
                             ->rules(['required', 'max:255'])
-                            ->disabled(),
+                            ->disabledOn([Pages\EditRecruitment::class]),
                         Forms\Components\RichEditor::make('self_description')
                             ->label('Self Description')
                             ->required()
                             ->placeholder('Enter self description')
                             ->rules(['required'])
-                            ->disabled(),
+                            ->disabledOn([Pages\EditRecruitment::class]),
                     ]),
                 Section::make('Validasi Data')
                     ->description('Validasi data kandidat.')
@@ -151,6 +178,64 @@ class RecruitmentResource extends Resource
                             ->reactive()
                             ->required(),
                     ])
+                    ->visible(fn ($record) => ($record->is_valid != "yes"))
+                    ->hiddenOn([Pages\CreateRecruitment::class]),
+                Section::make('Undangan Wawancara')
+                    ->schema([
+                        Radio::make('is_invited')
+                            ->label("Apakah Undang Wawancara?")
+                            ->required()
+                            ->boolean()
+                            ->inline()
+                            ->inlineLabel(false),
+                        DateTimePicker::make('interview_date')
+                            ->label('Tanggal Wawancara')
+                            ->native(false)
+                            ->required()
+                            ->hoursStep(2)
+                            ->minutesStep(15)
+                            ->secondsStep(10),
+                        TextInput::make('google_meet_link')
+                            ->url()
+                            ->label('Link Concall')
+                            ->required()
+                            ->placeholder('Enter old company')
+                            ->rules(['required', 'max:255']),
+                        Textarea::make('notes')
+                            ->label('Keterangan')
+                            ->rows(10)
+                            ->cols(20)
+                    ])
+                    // ->visible(fn ($record) => $record->is_valid == "yes")
+                    ->visible(function ($record) {
+                        if ($record->interview) {
+                            return ($record->is_valid == "yes" && $record->interview->is_invited == null);
+                        } else {
+                            return ($record->is_valid == "yes");
+                        };
+                    })
+                    ->hiddenOn([Pages\CreateRecruitment::class]),
+                Section::make('Input Hasil Wawancara')
+                    ->schema([
+                        Radio::make('is_success')
+                            ->label("Apakah Lulus?")
+                            ->required()
+                            ->boolean()
+                            ->inline()
+                            ->inlineLabel(false),
+                        Textarea::make('review')
+                            ->label('Keterangan Hasil Wawancara')
+                            ->rows(10)
+                            ->cols(20)
+                    ])
+                    ->visible(function ($record) {
+                        if ($record->interview) {
+                            return ($record->interview->is_invited == "yes");
+                        } else {
+                            return false;
+                        };
+                    })
+                    ->hiddenOn([Pages\CreateRecruitment::class]),
             ]);
     }
 
@@ -190,7 +275,7 @@ class RecruitmentResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('education')
-                    ->label('Pendidikan')
+                    ->label('Pendidikan Terakhir')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('old_company')
@@ -206,18 +291,43 @@ class RecruitmentResource extends Resource
                     ->label('Diundang Wawancara')
                     ->formatStateUsing(fn ($state) => $state === 'yes' ? 'Ya' : 'Tidak')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('interview_result.is_success')
+                Tables\Columns\TextColumn::make('interviewResult.is_success')
                     ->label('Lulus Wawancara')
                     ->formatStateUsing(fn ($state) => $state === 'yes' ? 'Ya' : 'Tidak')
+                    // ->formatStateUsing(fn ($state) => dd($state))
                     ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Action::make('Review')
+                    ->icon('heroicon-s-eye')
+                    ->url(fn (Model $record) => EditRecruitment::getUrl([$record->id]))
+                    ->visible(fn ($record) => ($record->is_valid != "yes")),
+                Action::make('Undang Wawancara')
+                    ->icon('heroicon-s-phone')
+                    ->url(fn (Model $record) => EditRecruitment::getUrl([$record->id]))
+                    ->visible(function ($record) {
+                        if ($record->interview) {
+                            return ($record->is_valid == "yes" && $record->interview->is_invited == null);
+                        } else {
+                            return ($record->is_valid == "yes");
+                        };
+                    }),
+                Action::make('Input Hasil Wawancara')
+                    ->icon('heroicon-s-clipboard-document')
+                    ->url(fn (Model $record) => EditRecruitment::getUrl([$record->id]))
+                    ->visible(function ($record) {
+                        if ($record->interview) {
+                            return ($record->interview->is_invited == "yes");
+                        } else {
+                            return false;
+                        };
+                    }),
+                // Tables\Actions\ViewAction::make(),
+                // Tables\Actions\EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

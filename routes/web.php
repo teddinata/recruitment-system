@@ -23,3 +23,6 @@ Route::post('/job-vacancies/{id}/apply', [ApplyJobController::class, 'store'])->
 Route::get('/job-vacancies/{id}/apply-job', [ApplyJobController::class, 'index'])->name('apply-job');
 
 Route::get('/workflow/rekrutmen/tracker/{tracking_code}', [TrackingController::class, 'show'])->name('tracking-status');
+Route::get('/send-mail', function(){
+    return view("emails.send-mail");
+});
