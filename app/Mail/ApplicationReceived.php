@@ -9,7 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class SendMail extends Mailable
+class ApplicationReceived extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -21,13 +21,13 @@ class SendMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct($record, $data)
+    public function __construct($data)
     {
-        $this->record = $record;
+        // $this->record = $record;
         // $this->subject = $subject;
         $this->data = $data;
 
-        $this->subject = 'Undangan Wawancara dari Viscus Media Dharma';
+        $this->subject = 'Lamaran ' . $data['job_title'] . ' Anda Telah Diterima';
     }
 
     /**
@@ -47,7 +47,7 @@ class SendMail extends Mailable
     {
         return new Content(
             // view: "emails.send-mail",
-            markdown: 'emails.send-mail',
+            markdown: 'emails.send-mail-application-received',
             with: [
                 'record' => $this->record,
                 // 'subject' => $this->subject,

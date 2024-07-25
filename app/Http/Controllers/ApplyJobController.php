@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\UserApplyJob;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ApplicationReceived;
+
 
 
 class ApplyJobController extends Controller
@@ -86,6 +89,16 @@ class ApplyJobController extends Controller
             $applyJob = new UserApplyJob($data);
             $applyJob->job_vacancy_id = $job_vacancy_id;
             $applyJob->save();
+
+            // mengirim email konfirmasi
+            Mail::to($applyJob->email)->send(new ApplicationReceived([
+                'first_name' => $applyJob->first_name,
+                'last_name' => $applyJob->last_name,
+                'job_title' => $applyJob->jobVacancy->title,
+                'tracking_code' => $applyJob->tracking_code,
+                'tracking_url' => route('tracking-status', $applyJob->tracking_code),
+                'email' => $applyJob->email,
+            ]));
         } catch (\Exception $e) {
             // Handle kesalahan saat menyimpan data
             return response()->json(['error' => $e->getMessage()], 500);

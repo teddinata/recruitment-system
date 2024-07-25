@@ -24,7 +24,7 @@ use Filament\Forms\Components\{DateTimePicker, RichEditor, Table as TableCompone
 use App\Filament\Resources\RecruitmentResource\Pages\EditRecruitment;
 use App\Filament\Resources\RecruitmentResource\RelationManagers\InterviewsRelationManager;
 use Filament\Forms\Components\{Card, FileUpload, TextInput, Textarea, DatePicker, Group, Radio, Select};
-
+use Filament\Forms\Components\Get;
 
 
 class RecruitmentResource extends Resource
@@ -146,9 +146,7 @@ class RecruitmentResource extends Resource
                                 'Facebook' => 'Facebook',
                                 'Twitter' => 'Twitter',
                                 'Linkedin' => 'Linkedin',
-                                'Jobstreet' => 'Jobstreet',
-                                'Karir.com' => 'Karir.com',
-                                'Jobindo.com' => 'Jobindo.com',
+                                'Lainnya' => 'Lainnya',
                             ])
                             ->native(false)
                             ->placeholder('Where did you find this job?')
@@ -185,27 +183,43 @@ class RecruitmentResource extends Resource
                         Radio::make('is_invited')
                             ->label("Apakah Undang Wawancara?")
                             ->required()
-                            ->boolean()
+                            ->options([
+                                'yes' => 'Ya',
+                                'no' => 'Tidak',
+                            ])
+                            ->reactive()
                             ->inline()
                             ->inlineLabel(false),
+
                         DateTimePicker::make('interview_date')
                             ->label('Tanggal Wawancara')
                             ->native(false)
-                            ->required()
+                            // ->required()
                             ->hoursStep(2)
                             ->minutesStep(15)
                             ->secondsStep(10),
+                            // visible only if is_invited is true
+                            // ->visible(fn ($get) => $get('is_invited') === true),
+
+
                         TextInput::make('google_meet_link')
                             ->url()
                             ->label('Link Concall')
-                            ->required()
+                            // ->required()
                             ->placeholder('Enter old company')
-                            ->rules(['required', 'max:255']),
+                            ->rules(['max:255'])
+                            // visible only if is_invited is true
+                            ,
+
                         Textarea::make('notes')
                             ->label('Keterangan')
                             ->rows(10)
                             ->cols(20)
+                            // visible only if is_invited is true
+
                     ])
+
+
                     // ->visible(fn ($record) => $record->is_valid == "yes")
                     ->visible(function ($record) {
                         if ($record->interview) {
@@ -272,10 +286,6 @@ class RecruitmentResource extends Resource
                     ->getStateUsing(function ($record) {
                         return $record->place_of_birth . ', ' . $record->date_of_birth;
                     })
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('education')
-                    ->label('Pendidikan Terakhir')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('old_company')

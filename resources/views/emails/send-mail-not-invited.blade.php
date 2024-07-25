@@ -43,25 +43,23 @@
         <div class="text-center">
             <img src="{{ $message->embed(public_path('frontend-new/img/viscus.png')) }}" alt="Viscus Media Dharma" style="width: 150px;">
         </div>
-        <h3 class="text-2xl font-bold mb-4 text-gray-900 mt-5">Dengan Hormat,</h3>
-        <p class="mb-4 text-gray-700">Sehubungan dengan kelanjutan proses seleksi, bersama ini kami mengundang Anda untuk mengikuti proses selanjutnya yang akan diadakan pada:</p>
-
-        <p class="mb-4 text-gray-700"><strong>Hari/Tanggal:</strong> {{ date('l, d F Y', strtotime($data['interview_date'])) }}</p>
-        <p class="mb-4 text-gray-700"><strong>Waktu:</strong> {{ date('H.i', strtotime($data['interview_date'])) }} - Selesai</p>
-        <p class="mb-4 text-gray-700"><strong>Agenda:</strong> Interview Online (jadwal terlampir)</p>
-
-        <p class="mb-4 text-gray-700"><strong>Join Zoom Meeting</strong></p>
-        <p class="mb-4">
-            <a href="{{ $data['google_meet_link'] }}" class="text-blue-500 hover:underline">{{ $data['google_meet_link'] }}</a>
+        <h3 class="text-2xl font-bold mb-4 text-gray-900 mt-5">Dear {{ $data['first_name'] }} {{ $data['last_name'] }},</h3>
+        <p class="mb-4 text-gray-700">
+            Terima kasih anda telah melamar sebagai {{ $data['job_title'] }} di Viscus Media Dharma.
         </p>
-        {{-- <p class="mb-4 text-gray-700"><strong>Meeting ID:</strong> 836 2718 5674</p>
-        <p class="mb-4 text-gray-700"><strong>Passcode:</strong> 645492</p> --}}
 
-        <p class="mb-4 text-gray-700">Dimohon juga untuk dapat hadir 10 menit sebelum jadwal yang telah ditentukan.</p>
+        <p class="mb-4 text-gray-700">
+            Terima kasih atas kesediaan Anda untuk melamar pada posisi {{ $data['job_title'] }} di Viscus Media Dharma
+            dan mengikuti proses seleksi yang tersedia.
+            Kami telah membaca resume Anda, namun tidak dapat meneruskannya ke seleksi tahap selanjutnya.
+            Kualifikasi Anda saat ini belum sesuai dengan kebutuhan perusahaan kami.
+        </p>
 
-        <p class="mb-4 text-gray-700">Demikian kami sampaikan, apabila ada hal-hal yang perlu ditanyakan lebih lanjut, dapat menghubungi kami melalui e-mail atau melalui telepon.</p>
+        <p class="mb-4 text-gray-700">Kami telah menyimpan resume Anda di database dan akan memberitahu Anda apabila tersedia posisi yang tepat di perusahaan kami.
+            Demikian informasi ini kami sampaikan, semoga sukses selalu! Terima kasih.
+        </p>
 
-        <p class="mb-4 text-gray-700">Terima kasih atas kerjasamanya.</p>
+
 
         <div class="border-t pt-4 text-sm text-gray-600">
             <p>Tim Rekrutmen</p>

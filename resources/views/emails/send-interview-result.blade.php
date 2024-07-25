@@ -34,7 +34,7 @@
 </head>
 <body class="bg-gray-100 font-sans leading-normal tracking-normal">
     <div class="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden my-8 p-6">
-        <h1 class="text-2xl font-bold mb-4 text-gray-900">Dengan Hormat,</h1>
+        <h3 class="text-2xl font-bold mb-4 text-gray-900 mt-5">Dengan Hormat,</h3>
         <p class="mb-4 text-gray-700">Sehubungan dengan kelanjutan proses seleksi, bersama ini kami mengundang Anda untuk mengikuti proses selanjutnya yang akan diadakan pada:</p>
 
         <p class="mb-4 text-gray-700"><strong>Hari/Tanggal:</strong> {{ date('l, d F Y', strtotime($data['interview_date'])) }}</p>
@@ -53,7 +53,7 @@
         <p class="mb-4 text-gray-700">Demikian kami sampaikan, apabila ada hal-hal yang perlu ditanyakan lebih lanjut, dapat menghubungi kami melalui e-mail atau melalui telepon.</p>
 
         <p class="mb-4 text-gray-700">Terima kasih atas kerjasamanya.</p>
-        
+
         <div class="border-t pt-4 text-sm text-gray-600">
             <p>{{ config('app.name') }}</p>
             <p>Jl. Raya No.123, Jakarta, Indonesia</p>
