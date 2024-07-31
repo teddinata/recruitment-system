@@ -39,6 +39,8 @@ class UserApplyJob extends Model
         'self_description',
         'gender',
         'cv_path',
+        'is_valid',
+        'acceptance_status',
     ];
 
     public function jobVacancy()
@@ -48,11 +50,12 @@ class UserApplyJob extends Model
 
     public function interview()
     {
-        return $this->hasOne(Interview::class);
+        // return $this->hasOne(Interview::class);
+        return $this->hasMany(Interview::class);
     }
 
     public function interviewResult()
     {
-        return $this->hasOneThrough(InterviewResult::class, Interview::class);
+        return $this->hasManyThrough(InterviewResult::class, Interview::class);
     }
 }

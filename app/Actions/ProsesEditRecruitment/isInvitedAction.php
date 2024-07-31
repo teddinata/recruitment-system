@@ -14,20 +14,36 @@ class isInvitedAction
 
     public function handle($record, array $data)
     {
-        // dd("oke");
         try {
             DB::beginTransaction();
-            // dd($data['is_invited'] == true);
-            if ($record->interview) {
-                // dd("1");
-                $record->interview->update($data);
+            // dd($data);
+
+            if ($record->interview->count() != 0) {
+                $cek = $record->interview->contains(function ($interview) use ($data) {
+                    return $interview->type === $data['interview_type'];
+                });
+                if($cek){
+                    $cek->update($data);
+                }else{
+                    $record->interview()->create([
+                        'is_invited' => $data['is_invited'],
+                        'interview_date' => $data['interview_date'],
+                        'google_meet_link' => $data['google_meet_link'],
+                        'notes' => $data['notes'],
+                        'interview_type' => $data['interview_type']
+                    ]);
+                }
             } else {
-                // dd($record);
-                $record->interview->update($data);
-                // $record->interview()->create($data);
+                $record->interview()->create([
+                    'is_invited' => $data['is_invited'],
+                    'interview_date' => $data['interview_date'],
+                    'google_meet_link' => $data['google_meet_link'],
+                    'notes' => $data['notes'],
+                    'interview_type' => $data['interview_type']
+                ]);
             }
-            if($data['is_invited'] == "yes"){
-                $this->sendEmailInformation($record, $data);
+            if ($data['is_invited'] == "yes") {
+                // $this->sendEmailInformation($record, $data);
             } else {
                 // dd
                 // send email not invited
@@ -42,7 +58,6 @@ class isInvitedAction
         }
 
         return $record;
-
     }
     protected function sendEmailInformation($record, $data): void
     {

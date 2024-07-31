@@ -2,8 +2,12 @@
 
 namespace App\Filament\Resources\RecruitmentResource\Pages;
 
-use App\Filament\Resources\RecruitmentResource;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Resources\Pages\ViewRecord;
+use App\Filament\Resources\RecruitmentResource;
 
 class ViewRecruitment extends ViewRecord
 {
@@ -12,8 +16,9 @@ class ViewRecruitment extends ViewRecord
     protected function getActions(): array
     {
         return [
-            Actions\EditAction::make(),
-            Actions\DeleteAction::make(),
+            Action::make('Edit')
+                    ->icon('heroicon-s-eye')
+                    ->url(fn (Model $record) => EditRecruitment::getUrl([$record->id]))
         ];
     }
 }

@@ -9,7 +9,7 @@ class Interview extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_apply_job_id', 'is_invited', 'interview_date', 'google_meet_link', 'notes'];
+    protected $fillable = ['user_apply_job_id', 'is_invited', 'interview_date', 'google_meet_link', 'notes', 'interview_type'];
 
     public function userApplyJob()
     {

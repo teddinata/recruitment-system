@@ -16,14 +16,18 @@ class isSuccessAction
     {
         try {
             DB::beginTransaction();
-
-            if ($record->interview->interviewResult) {
+            // dd($record->interview);
+            // dd();
+            if ($record->interview->where('id', $data['interview_id'])->first()->interviewResult) {
                 $record->interview->interviewResult->update($data);
             } else {
-                $record->interview->interviewResult()->create($data);
+                $record->interview->where('id', $data['interview_id'])->first()->interviewResult()->create([
+                    'is_success' => $data['is_success'],
+                    'review' => $data['review'],
+                ]);
             }
-            if($data['is_success'] == true){
-                $this->sendEmailInformation($record, $data);
+            if ($data['is_success'] == true) {
+                // $this->sendEmailInformation($record, $data);
             }
 
             DB::commit();
@@ -34,7 +38,6 @@ class isSuccessAction
         }
 
         return $record;
-        
     }
     protected function sendEmailInformation($record, $data): void
     {
