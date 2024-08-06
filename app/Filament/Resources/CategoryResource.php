@@ -22,8 +22,13 @@ class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
 
+    protected static ?string $slug = 'data-master/categories';
+    
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-group';
+    
     protected static ?string $navigationGroup = 'Master Data';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {

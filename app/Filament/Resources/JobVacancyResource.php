@@ -25,9 +25,13 @@ class JobVacancyResource extends Resource
 {
     protected static ?string $model = JobVacancy::class;
 
+    protected static ?string $slug = 'data-master/job-vacancies';
+
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
 
     protected static ?string $navigationGroup = 'Master Data';
+
+    protected static ?int $navigationSort = 2;
 
     protected static bool $softDelete = true;
 

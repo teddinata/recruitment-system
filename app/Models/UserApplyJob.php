@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\StageRecruitment;
+use App\Enums\StatusRecruitment;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -39,7 +41,23 @@ class UserApplyJob extends Model
         'self_description',
         'gender',
         'cv_path',
+        'is_valid',
+        'acceptance_status',
+        'current_stage',
     ];
+
+    // protected $casts = [
+    //     'acceptance_status' => StatusRecruitment::class,
+    //     'current_stage' => StageRecruitment::class,
+    // ];
+
+    protected function casts(): array
+    {
+        return [
+            'acceptance_status' => StatusRecruitment::class,
+            'current_stage' => StageRecruitment::class,
+        ];
+    }
 
     public function jobVacancy()
     {
@@ -48,11 +66,12 @@ class UserApplyJob extends Model
 
     public function interview()
     {
-        return $this->hasOne(Interview::class);
+        // return $this->hasOne(Interview::class);
+        return $this->hasMany(Interview::class);
     }
 
     public function interviewResult()
     {
-        return $this->hasOneThrough(InterviewResult::class, Interview::class);
+        return $this->hasManyThrough(InterviewResult::class, Interview::class);
     }
 }
