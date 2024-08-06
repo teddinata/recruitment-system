@@ -23,7 +23,7 @@ class InterviewResult extends Model
 
     public function interview()
     {
-        return $this->belongsTo(Interview::class);
+        return $this->belongsTo(Interview::class, 'interview_id', 'id');
     }
 
 }

@@ -2,16 +2,25 @@
 
 namespace App\Livewire;
 
+use stdClass;
 use Filament\Tables;
 use Livewire\Component;
 use App\Models\UserApplyJob;
+use App\Enums\StageRecruitment;
+use App\Enums\StatusRecruitment;
+use Filament\Tables\Actions\Action;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Contracts\HasTable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Request;
+use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 use App\Filament\Resources\RecruitmentResource\Pages\EditRecruitment;
 use App\Filament\Resources\RecruitmentResource\Pages\ViewRecruitment;
+use App\Filament\Resources\RecruitmentResource\Pages\EditRecruitmentValid;
 use App\Filament\Resources\RecruitmentResource\Pages\EditRecruitmentInterview;
 use App\Filament\Resources\RecruitmentResource\Pages\EditRecruitmentInterviewResult;
 
@@ -19,103 +28,196 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
 {
     use InteractsWithTable, InteractsWithForms;
 
-    public $record;
+    public UserApplyJob $record;
+
+    public $filter = null;
+
+    public $filterBackup = null;
+
+    public $resetTable = false;
+
+    public $loadFilter;
+
+    protected $listeners = ['filterRefresh' => '$refresh'];
+
+    public function refreshFilter()
+    {
+        $this->loadFilter = Request::query("filter");
+    }
+
+    public function resetFilter()
+    {
+        $this->resetTable = true;
+        $this->dispatch('filterRefresh');
+    }
 
     public function mount(UserApplyJob $record)
     {
+        $this->record = $record;
+        $this->refreshFilter();
+        if ($this->loadFilter) {
+            $this->filterBackup = $this->loadFilter;
+        }
     }
-    public function render()
+    public function updateFilter($filter)
     {
-        return view('livewire.workflow-recruitment');
+        $this->filter = $filter;
+        $this->dispatch('filterRefresh');
+        // $this->dispatch('filter-updated', filter: $filter);
+    }
+
+    protected function getQuery()
+    {
+        $query = UserApplyJob::query();
+        if (!$this->resetTable) {
+            if ($this->filter ?? $this->filterBackup) {
+                switch ($this->filter ?? $this->filterBackup) {
+                    case 'Activity_1l23d1f': //filter data pelamar belum di validasi -> Review Data Diri
+                        return $query->where('is_valid', null);
+                        break;
+                    case 'Event_0dnse37': // filter data pelamar ditolak -> Notifikasi Tidak Lulus Seleksi
+                        return $query->where('is_valid', 'no');
+                        break;
+                    case 'Activity_1h0pos4': // filter data pelamar yang di lulus tahap seleksi data diri -> input jadwal interview User
+                        return $query->where('is_valid', 'yes')->whereDoesntHave('interview');
+                        break;
+                    case 'Activity_1frsqol': // filter data pelamar yang di undang wawancara user -> Input Hasil Interview User
+                        return $query->whereHas(
+                            'interview',
+                            fn (Builder $subQuery) =>
+                            $subQuery->where('is_invited', 'yes')->where('interview_type', 'user')->whereDoesntHave('interviewResult')
+                        );
+                        break;
+                    case 'Event_1yf59cf': // filter data pelamar tidak lulus tahap wawancara user -> Notifikasi Tidak Lulus Interview User
+                        return $query->whereHas('interview', function (Builder $subQuery) {
+                            $subQuery->where('is_invited', 'yes')
+                                ->where('interview_type', 'user')
+                                ->whereHas('interviewResult', fn (Builder $subQuery2) => $subQuery2->where('is_success', 'no'));
+                        })->has('interview', '=', 1);
+                        break;
+                    case 'Activity_0y70sst': // filter data pelamar lulus tahap wawancara user -> Input jadwal Interview HR
+                        return $query->whereHas('interview', function (Builder $subQuery) {
+                            $subQuery->where('is_invited', 'yes')
+                                ->where('interview_type', 'user')
+                                ->whereHas('interviewResult', fn (Builder $subQuery2) => $subQuery2->where('is_success', 'yes'));
+                        })->has('interview', '=', 1);
+                        break;
+                    case 'Activity_0qi07gz': // filter data pelamar yang diundang wawancara hr -> Input Hasil Interview HR
+                        return $query->whereHas(
+                            'interview',
+                            fn (Builder $subQuery) =>
+                            $subQuery->where('is_invited', 'yes')->where('interview_type', 'hr')->whereDoesntHave('interviewResult')
+                        );
+                        break;
+                    case 'Event_00wxbct': // filter data pelamar tidak lulus tahap wawancara hr -> Notifikasi Tidak Lulus Interview HR
+                        return $query->whereHas('interview', function (Builder $subQuery) {
+                            $subQuery->where('is_invited', 'yes')
+                                ->where('interview_type', 'hr')
+                                ->whereHas('interviewResult', fn (Builder $subQuery2) => $subQuery2->where('is_success', 'no'));
+                        });
+                        break;
+                    case 'Activity_00fjfo4': // filter data pelamar lulus tahap wawancara hr -> Input Hasil Akhir
+                        return $query->whereHas('interview', function (Builder $subQuery) {
+                            $subQuery->where('is_invited', 'yes')
+                                ->where('interview_type', 'hr')
+                                ->whereHas('interviewResult', fn (Builder $subQuery2) => $subQuery2->where('is_success', 'yes'));
+                        });
+                        break;
+                        // case 'Gateway_1awh5yc':
+                        //     $query->where('column_name', 'Exclusive Gateway');
+                        //     break;
+                    default:
+                        return $query;
+                        break;
+                }
+            }
+        }
+        return $query;
     }
 
     public function table(Tables\Table $table): Tables\Table
     {
         return $table
-            ->query(UserApplyJob::query())
+            ->query($this->getQuery())
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('No')
+                    ->rowIndex(),
                 Tables\Columns\TextColumn::make('jobVacancy.title')
-                    ->label('Job Vacancy')
+                    ->label('Job Position')
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('cv_path')
-                    ->label('PDF')
+                    ->label('Resume Attachment')
                     ->formatStateUsing(function ($state) {
                         return '<a href="' . asset('storage/' . $state) . '" target="_blank">Lihat CV</a>';
                     })
-                    ->html(),
+                    ->html()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('full_name')
                     ->label('Full Name')
-                    ->getStateUsing(function ($record) {
+                    ->state(function ($record) {
                         return $record->first_name . ' ' . $record->last_name;
                     })
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(['first_name', 'last_name'])
+                    ->sortable(['first_name', 'last_name']),
+                Tables\Columns\TextColumn::make('gender')
+                    ->label('Gender')
+                    ->formatStateUsing(fn ($state) => ($state == 1) ? "Laki-Laki" : "Perempuan"),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('phone_number')
-                    ->label('No HP')
+                Tables\Columns\TextColumn::make('acceptance_status')
+                    ->label('Status')
+                    ->badge()
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('place_of_birth')
-                    ->label('Tempat, Tanggal Lahir')
+                Tables\Columns\TextColumn::make('current_stage')
+                    ->label('Current Stage')
+                    ->badge()
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('phone_number')
+                    ->label('Phone Number')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('place_and_date_birth')
+                    ->label('Place, Date of Birth')
                     ->getStateUsing(function ($record) {
                         return $record->place_of_birth . ', ' . $record->date_of_birth;
                     })
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('old_company')
-                    ->label('Perusahaan Terakhir')
+                    ->label('Old Company')
                     ->searchable()
                     ->sortable()
-                    ->default('-'),
-                Tables\Columns\TextColumn::make('gender')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('is_valid')
-                    ->label('Valid')
-                    ->formatStateUsing(fn ($state) => $state === 'yes' ? 'Ya' : 'Tidak')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('interview.is_invited')
-                    ->label('Diundang Wawancara')
-                    ->formatStateUsing(function ($record, $state) {
-                        $data = $record->interview;
-                        if($data->count() == 2){
-                            return (strpos($state, 'yes') !== false ? 'Ya' : 'Tidak');
-                        }
-                        return '';
-                    })
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('interviewResult.is_success')
-                    ->label('Lulus Wawancara')
-                    ->formatStateUsing(function ($record, $state) {
-                        $data = $record->interviewResult;
-                        if($data->count() == 2){
-                            return (strpos($state, 'yes') !== false ? 'Ya' : 'Tidak');
-                        }
-                        return '';
-                    })
-                    ->sortable(),
+                    ->default('-')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->persistSearchInSession()
             ->filters([
                 //
             ])
+            ->toggleColumnsTriggerAction(
+                fn (Action $action) => $action
+                    ->button()
+                    ->label('Toggle columns'),
+            )
             ->recordUrl(fn (Model $record) => ViewRecruitment::getUrl([$record->id]))
             ->actions([
                 Tables\Actions\Action::make('Review')
                     ->icon('heroicon-s-eye')
-                    ->url(fn (Model $record) => EditRecruitment::getUrl([$record->id]))
-                    ->visible(fn ($record) => ($record->is_valid != "yes")),
-                Tables\Actions\Action::make('Undang Wawancara')
+                    ->url(fn (Model $record) => EditRecruitmentValid::getUrl([$record->id]))
+                    ->visible(fn ($record) => (is_null($record->is_valid))),
+                Tables\Actions\Action::make('Invite to Interview')
                     ->label(function ($record) {
                         if ($record->interview->count() == 0 && $record->is_valid == "yes") {
-                            return "Undangan Wawancara User";
+                            return "Invite to User Interview";
                         } elseif ($record->interview->count() == 1 && $record->interview->first()->interviewResult == true) {
-                            return "Undangan Wawancara HR";
+                            return "Invite to HR Interview";
                         }
                     })
                     ->icon('heroicon-s-phone')
@@ -128,14 +230,12 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                         }
                         return false;
                     }),
-                Tables\Actions\Action::make('Input Hasil Wawancara')
+                Tables\Actions\Action::make('Interview Result')
                     ->label(function ($record) {
                         if ($record->interview->count() == 1 && $record->interview->first()->interviewResult == false) {
-                            return "Input Hasil Wawancara User";
+                            return "User Interview Result";
                         } else if ($record->interview->count() == 2 && $record->interview->last()->interviewResult == false) {
-                            return "Input Hasil Wawancara HR";
-                        } else {
-                            return '';
+                            return "HR Interview Result";
                         }
                     })
                     ->icon('heroicon-s-clipboard-document')
@@ -149,30 +249,58 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                             return false;
                         }
                     }),
-                Tables\Actions\Action::make('Terima')
+                Tables\Actions\Action::make('Accepted')
+                ->color('success')
                     ->icon('heroicon-s-check-circle')
                     ->action(function ($record) {
-                        return $record->update([
-                            'acceptance_status' => 'accepted'
+
+                        $record->update([
+                            'current_stage' => StageRecruitment::FDC->value,
+                            'acceptance_status' => StatusRecruitment::ACCEPTED->value
                         ]);
+                        Notification::make()
+                            ->title('Saved successfully')
+                            ->success()
+                            ->send();
                     })
+                    ->requiresConfirmation()
                     ->visible(function ($record) {
-                        if ($record->interview->count() == 2 && $record->interview->last()->interviewResult->where('is_success', 'yes')) {
-                            return true;
+                        if ($record->interview->count() == 2 && $record->interview->last()->interviewResult) {
+                            if ($record->interview->last()->interviewResult->where('is_success', 'yes')) {
+                                if ($record->acceptance_status == StatusRecruitment::PENDING) {
+                                    return true;
+                                };
+                                return false;
+                            }
+                            return false;
                         } else {
                             return false;
                         }
                     }),
-                Tables\Actions\Action::make('Tolak')
+                Tables\Actions\Action::make('Rejected')
+                    ->color('danger')
                     ->icon('heroicon-s-x-circle')
                     ->action(function ($record) {
-                        return $record->update([
-                            'acceptance_status' => 'rejected'
+                        $record->update([
+                            'current_stage' => StageRecruitment::FD->value,
+                            'acceptance_status' => StatusRecruitment::REJECTED->value
                         ]);
+                        Notification::make()
+                            ->title('Saved successfully')
+                            ->success()
+                            ->send();
                     })
+                    ->requiresConfirmation()
                     ->visible(function ($record) {
-                        if ($record->interview->count() == 2 && $record->interview->last()->interviewResult->where('is_success', 'yes')) {
-                            return true;
+
+                        if ($record->interview->count() == 2 && $record->interview->last()->interviewResult) {
+                            if ($record->interview->last()->interviewResult->where('is_success', 'yes')) {
+                                if ($record->acceptance_status == StatusRecruitment::PENDING) {
+                                    return true;
+                                };
+                                return false;
+                            }
+                            return false;
                         } else {
                             return false;
                         }
@@ -186,5 +314,9 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+    public function render()
+    {
+        return view('livewire.workflow-recruitment');
     }
 }

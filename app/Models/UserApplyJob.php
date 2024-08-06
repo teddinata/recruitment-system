@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\StageRecruitment;
+use App\Enums\StatusRecruitment;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -41,7 +43,21 @@ class UserApplyJob extends Model
         'cv_path',
         'is_valid',
         'acceptance_status',
+        'current_stage',
     ];
+
+    // protected $casts = [
+    //     'acceptance_status' => StatusRecruitment::class,
+    //     'current_stage' => StageRecruitment::class,
+    // ];
+
+    protected function casts(): array
+    {
+        return [
+            'acceptance_status' => StatusRecruitment::class,
+            'current_stage' => StageRecruitment::class,
+        ];
+    }
 
     public function jobVacancy()
     {

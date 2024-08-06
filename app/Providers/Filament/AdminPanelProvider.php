@@ -29,14 +29,19 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors([
+                'default' => Color::Gray,
                 'primary' => Color::Amber,
+                'danger' => Color::Red,
+                'success' => Color::Emerald,
+                'warning' => Color::Yellow,
+                'info' => Color::Sky,
             ])
-            // ->renderHook(
-            //     'panels::scripts.before',
-            //     fn () => Blade::render(<<<'Blade'
-            //             @vite(['resources/js/admin.js'])
-            //         Blade)
-            // )
+            ->renderHook(
+                'panels::scripts.before',
+                fn () => Blade::render(<<<'Blade'
+                        @vite(['resources/js/admin.js'])
+                    Blade)
+            )
             ->viteTheme('resources/css/filament/admin/theme.css')
             // max content width
             ->maxContentWidth('8xl')
@@ -49,6 +54,10 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
+            ])
+            ->navigationGroups([
+                'Master Data',
+                'Ongoing'
             ])
             ->middleware([
                 EncryptCookies::class,

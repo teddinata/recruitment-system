@@ -18,7 +18,7 @@ class Interview extends Model
 
     public function interviewResult()
     {
-        return $this->hasOne(InterviewResult::class);
+        return $this->hasOne(InterviewResult::class, 'interview_id', 'id');
     }
 
 }

@@ -12,12 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('user_apply_jobs', function (Blueprint $table) {
-            $table->enum('acceptance_status', [
-                'accepted',
-                'rejected',
-                'pending',
-                'failed'
-                ])->default('pending')->after('is_valid');
+            $table->enum('current_stage', [
+                'document_screening',
+                'document_screening(completed)',
+                'user_interview',
+                'user_interview(completed)',
+                'hr_interview',
+                'hr_interview(completed)',
+                'final_decision',
+                'final_decision(completed)',
+                ])->default('document_screening')->after('acceptance_status');
         });
     }
 
@@ -27,7 +31,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('user_apply_jobs', function (Blueprint $table) {
-            $table->dropColumn('acceptance_status');
+            $table->dropColumn('current_stage');
         });
     }
 };
