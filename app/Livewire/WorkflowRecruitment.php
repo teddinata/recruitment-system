@@ -127,12 +127,24 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                         //     $query->where('column_name', 'Exclusive Gateway');
                         //     break;
                     default:
-                        return $query;
+                        return $query->whereNot(function (Builder $subQuery) {
+                            $subQuery->whereIn('acceptance_status', [
+                                StatusRecruitment::FAILED->value,
+                                StatusRecruitment::REJECTED->value,
+                                StatusRecruitment::ACCEPTED->value
+                            ]);
+                        });
                         break;
                 }
             }
         }
-        return $query;
+        return $query->whereNot(function (Builder $subQuery) {
+            $subQuery->whereIn('acceptance_status', [
+                StatusRecruitment::FAILED->value,
+                StatusRecruitment::REJECTED->value,
+                StatusRecruitment::ACCEPTED->value
+            ]);
+        });;
     }
 
     public function table(Tables\Table $table): Tables\Table
@@ -250,7 +262,7 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                         }
                     }),
                 Tables\Actions\Action::make('Accepted')
-                ->color('success')
+                    ->color('success')
                     ->icon('heroicon-s-check-circle')
                     ->action(function ($record) {
 
