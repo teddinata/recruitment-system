@@ -55,8 +55,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                // Widgets\AccountWidget::class,
+                // Widgets\FilamentInfoWidget::class,
             ])
             ->navigationGroups(app()->getLocale() == 'id' ? [
                 'Data Master',
@@ -78,12 +78,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
-            ->userMenuItems([
-                MenuItem::make()
-                ->label('Settings')
-                ->url(fn() => Setting::getUrl())
-                ->icon('heroicon-o-cog-6-tooth')
             ]);
     }
 }
