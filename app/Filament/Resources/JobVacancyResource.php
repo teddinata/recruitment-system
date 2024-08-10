@@ -216,6 +216,8 @@ class JobVacancyResource extends Resource
         $locale = app()->getLocale();
         if ($locale == 'id') {
             $result = 'Loker';
+        }else{
+            $result = 'Job Vacancy';
         }
         return $result;
     }

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('language_lines', function (Blueprint $table) {
             $table->id();
-            $table->json('language');
+            $table->string('kode_country')->default('id');
             $table->timestamps();
         });
     }

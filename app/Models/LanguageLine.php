@@ -10,16 +10,9 @@ class LanguageLine extends Model
     use HasFactory;
 
     protected $fillable = [
-        'language'
+        'kode_country'
     ];
 
     protected $table = 'language_lines';
-
-    protected function casts(): array
-    {
-        return [
-            'language' => 'array'
-        ];
-    }
 
 }

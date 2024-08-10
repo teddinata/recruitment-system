@@ -37,36 +37,24 @@ class Setting extends Page
                 Section::make('Select Language')
                     ->description("")
                     ->schema([
-                        Repeater::make('language')
-                            ->schema([
-                                TextInput::make('label')
-                                    ->label('Label')
-                                    ->required(),
-                                TextInput::make('flag')
-                                    ->label('Flag')
-                                    ->required(),
-                                Select::make('status')
-                                    ->label('Status')
-                                    ->options([
-                                        '1' => "Active",
-                                        '0' => "Inactive",
-                                    ])
-                                    ->required(),
-                            ])
+                        Select::make('kode_country')
+                        ->options([
+                            'en' => 'English',
+                            'id' => 'Indonesian',
+                        ])
                     ])
                     ->aside(),
                 Actions::make([
-                    Action::make('saveNotification')
+                    Action::make('saveBahasa')
                         ->label('Save')
                         ->successNotificationTitle('Saved!')
                         ->failureNotificationTitle('Data could not be saved.')
                         ->action(function () {
                             $formData = $this->form->getState();
-
+                            // dd($formData);
                             try {
-                                $this->modelLang->update([
-                                    'language' => $formData['language'],
-                                ]);
+                                $this->modelLang->update($formData);
+                                // app()->setLocale($formData['kode_country']);
                                 $this->notif();
                             } catch (\Throwable $th) {
                                 throw $th;
