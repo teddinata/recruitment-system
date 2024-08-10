@@ -43,9 +43,9 @@ class DatabaseSeeder extends Seeder
 
         //User Apply Job
         $this->command->warn(PHP_EOL. "Creating User Apply Job...");
-        $getOne = $jobVacancy->random();
-        $this->withProgressBar(2, fn () => UserApplyJob::factory(1)->create([
-            'job_vacancy_id' => $getOne->id,
+        // $getOne = $jobVacancy->random();
+        $this->withProgressBar(20, fn () => UserApplyJob::factory(1)->create([
+            'job_vacancy_id' => $jobVacancy->random(),
         ]));
         $this->command->info('User Apply Job created.');
     }

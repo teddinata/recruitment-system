@@ -21,6 +21,7 @@ use App\Actions\ProsesEditRecruitment\isSuccessAction;
 use App\Filament\Resources\RecruitmentResource\RelationManagers;
 use App\Filament\Resources\RecruitmentResource\RelationManagers\InterviewsRelationManager;
 use App\Filament\Resources\RecruitmentResource\RelationManagers\InterviewResultsRelationManager;
+use Carbon\Carbon;
 
 class EditRecruitment extends EditRecord
 {
@@ -30,10 +31,12 @@ class EditRecruitment extends EditRecord
     {
         try {
             if ($data['is_valid'] == "no") {
+                $data['valid_created_at'] = Carbon::now();
                 $data['acceptance_status'] = StatusRecruitment::FAILED->value;
                 $record->update($data);
                 // $this->sendEmailNotInvited($record, $data);
             } elseif($data['is_valid'] == 'yes') {
+                $data['valid_created_at'] = Carbon::now();
                 $data['current_stage'] = StageRecruitment::DSC->value;
                 $data['acceptance_status'] = StatusRecruitment::PENDING->value;
                 $record->update($data);

@@ -2,10 +2,11 @@
 
 namespace App\Filament\Resources\RecruitmentResource\Pages;
 
+use Carbon\Carbon;
+use App\Mail\SendMail;
 use App\Enums\InterviewType;
 use App\Enums\StageRecruitment;
 use App\Enums\StatusRecruitment;
-use App\Mail\SendMail;
 use App\Mail\SendMailNotInvited;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Database\Eloquent\Model;
@@ -53,7 +54,9 @@ class EditRecruitmentInterview extends EditRecord
                 // $this->sendEmailInformation($record, $data);
             } else {
                 $data['acceptance_status'] = StatusRecruitment::FAILED->value;
+                $data['status_created_at'] = Carbon::now();
                 $record->update([
+                    'status_created_at' => $data['status_created_at'],
                     'acceptance_status' => $data['acceptance_status'],
                 ]);
                 // send email not invited

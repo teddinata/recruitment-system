@@ -17,18 +17,32 @@ enum StageRecruitment: string implements HasColor, HasLabel
     case FD = 'final_decision';
     case FDC = 'final_decision(completed)';
 
+
     public function getLabel(): string
     {
-        return match ($this) {
-            self::DS => 'Document Screening',
-            self::DSC => 'Document Screening(completed)',
-            self::UI => 'User Interview',
-            self::UIC => 'User Interview(completed)',
-            self::HI => 'HR Interview',
-            self::HIC => 'HR Interview(completed)',
-            self::FD => 'Final Decision',
-            self::FDC => 'Final Decision(completed)',
-        };
+        if ((app()->getLocale() == 'id')) {
+            return match ($this) {
+                self::DS => 'Review Data Diri',
+                self::DSC => 'Review Data Diri(Selesai)',
+                self::UI => 'Wawancara User',
+                self::UIC => 'Wawancara User(Selesai)',
+                self::HI => 'Wawancara HR',
+                self::HIC => 'Wawancara HR(Selesai)',
+                self::FD => 'Hasil Akhir',
+                self::FDC => 'Hasil Akhir(Selesai)',
+            };
+        } else {
+            return match ($this) {
+                self::DS => 'Document Screening',
+                self::DSC => 'Document Screening(completed)',
+                self::UI => 'User Interview',
+                self::UIC => 'User Interview(completed)',
+                self::HI => 'HR Interview',
+                self::HIC => 'HR Interview(completed)',
+                self::FD => 'Final Decision',
+                self::FDC => 'Final Decision(completed)',
+            };
+        }
     }
 
     public function getColor(): string | array | null
@@ -45,4 +59,3 @@ enum StageRecruitment: string implements HasColor, HasLabel
         };
     }
 }
-

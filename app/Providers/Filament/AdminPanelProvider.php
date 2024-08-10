@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Setting;
+use App\Filament\Pages\Settings;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
@@ -16,6 +18,7 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 
@@ -55,7 +58,10 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
             ])
-            ->navigationGroups([
+            ->navigationGroups(app()->getLocale() == 'id' ? [
+                'Data Master',
+                'Sedang Berlangsung'
+            ] : [
                 'Master Data',
                 'Ongoing'
             ])
@@ -72,6 +78,12 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+            ])
+            ->userMenuItems([
+                MenuItem::make()
+                ->label('Settings')
+                ->url(fn() => Setting::getUrl())
+                ->icon('heroicon-o-cog-6-tooth')
             ]);
     }
 }

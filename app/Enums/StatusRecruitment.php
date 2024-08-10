@@ -15,19 +15,28 @@ enum StatusRecruitment: string implements HasColor, HasIcon, HasLabel
 
     public function getLabel(): string
     {
-        return match ($this) {
-            self::PENDING => 'Pending',
-            self::ACCEPTED => 'Accepted',
-            self::REJECTED => 'Rejected',
-            self::FAILED => 'Failed',
-        };
+        if ((app()->getLocale() == 'id')) {
+            return match ($this) {
+                self::PENDING => 'Tertunda/Proses',
+                self::ACCEPTED => 'Diterima',
+                self::REJECTED => 'Ditolak',
+                self::FAILED => 'Gagal',
+            };
+        } else {
+            return match ($this) {
+                self::PENDING => 'Pending',
+                self::ACCEPTED => 'Accepted',
+                self::REJECTED => 'Rejected',
+                self::FAILED => 'Failed',
+            };
+        }
     }
 
     public function getColor(): string | array | null
     {
         return match ($this) {
             self::PENDING => 'warning',
-            self::ACCEPTED =>'success',
+            self::ACCEPTED => 'success',
             self::REJECTED => 'danger',
             self::FAILED => 'default',
         };

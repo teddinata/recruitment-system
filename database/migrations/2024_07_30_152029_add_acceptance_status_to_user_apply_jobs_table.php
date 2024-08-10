@@ -18,6 +18,8 @@ return new class extends Migration
                 'pending',
                 'failed'
                 ])->default('pending')->after('is_valid');
+            $table->timestamp('status_created_at')->nullable()->after('acceptance_status');
+            $table->timestamp('valid_created_at')->nullable()->after('is_valid');
         });
     }
 
@@ -28,6 +30,8 @@ return new class extends Migration
     {
         Schema::table('user_apply_jobs', function (Blueprint $table) {
             $table->dropColumn('acceptance_status');
+            $table->dropColumn('status_created_at');
+            $table->dropColumn('valid_created_at');
         });
     }
 };

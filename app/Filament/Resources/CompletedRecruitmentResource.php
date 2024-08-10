@@ -21,12 +21,6 @@ class CompletedRecruitmentResource extends Resource
 {
     protected static ?string $model = UserApplyJob::class;
 
-    protected static ?string $slug = 'ongoing/completed-recruitments';
-
-    protected static ?string $label = 'Completed Recruitments';
-
-    protected static ?string $navigationGroup = 'Ongoing';
-
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?int $navigationSort = 2;
@@ -42,8 +36,6 @@ class CompletedRecruitmentResource extends Resource
     public static function table(Table $table): Table
     {
         $query = UserApplyJob::whereIn('acceptance_status', ['failed', 'rejected', 'accepted']);
-;
-        // dd($userApplyJobs);
         return $table
             ->query($query)
             ->columns([
@@ -288,5 +280,40 @@ class CompletedRecruitmentResource extends Resource
         return [
             'index' => Pages\ManageCompletedRecruitments::route('/'),
         ];
+    }
+    // protected static ?string $slug = 'ongoing/completed-recruitments';
+
+    // protected static ?string $label = 'Completed Recruitments';
+
+    // protected static ?string $navigationGroup = 'Ongoing';
+    public static function getLabel(): ?string
+    {
+        $locale = app()->getLocale();
+        if ($locale == 'id') {
+            $result = 'Rekrutmen Selesai';
+        } else {
+            $result = 'Completed Recruitments';
+        }
+        return $result;
+    }
+    public static function getNavigationGroup(): ?string
+    {
+        $locale = app()->getLocale();
+        if ($locale == 'id') {
+            $result = 'Sedang Berlangsung';
+        } else {
+            $result = 'Ongoing';
+        }
+        return $result;
+    }
+    public static function getSlug(): string
+    {
+        $locale = app()->getLocale();
+        if ($locale == 'id') {
+            $result = 'sedang-berlangsung/rekrutmen-selesai';
+        } else {
+            $result = 'ongoing/completed-recruitments';
+        }
+        return $result;
     }
 }

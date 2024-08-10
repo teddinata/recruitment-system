@@ -12,6 +12,7 @@ use App\Actions\ProsesEditRecruitment\isSuccessAction;
 use App\Enums\InterviewType;
 use App\Enums\StageRecruitment;
 use App\Enums\StatusRecruitment;
+use Carbon\Carbon;
 
 class EditRecruitmentInterviewResult extends EditRecord
 {
@@ -27,7 +28,8 @@ class EditRecruitmentInterviewResult extends EditRecord
                 $record->interview->where('id', $data['interview_id'])->first()->interviewResult()->create($data);
             }
             $cekInterviewType = $record->interview->where('id', $data['interview_id'])->first()->interview_type;
-            if ($data['is_success'] == true) {
+            if ($data['is_success'] == 'yes') {
+
                 if ($cekInterviewType == InterviewType::USER->getLabel()) {
                     $data['acceptance_status'] = StatusRecruitment::PENDING->value;
                     $data['current_stage'] = StageRecruitment::UIC->value;
@@ -47,7 +49,9 @@ class EditRecruitmentInterviewResult extends EditRecord
                 // $this->sendEmailInformation($record, $data);
             } else {
                 $data['acceptance_status'] = StatusRecruitment::FAILED->value;
+                $data['status_created_at'] = Carbon::now();
                 $record->update([
+                    'status_created_at' => $data['status_created_at'],
                     'acceptance_status' => $data['acceptance_status'],
                 ]);
             }
