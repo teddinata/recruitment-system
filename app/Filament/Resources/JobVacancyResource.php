@@ -25,11 +25,7 @@ class JobVacancyResource extends Resource
 {
     protected static ?string $model = JobVacancy::class;
 
-    protected static ?string $slug = 'data-master/job-vacancies';
-
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
-
-    protected static ?string $navigationGroup = 'Master Data';
 
     protected static ?int $navigationSort = 2;
 
@@ -39,29 +35,29 @@ class JobVacancyResource extends Resource
     {
         return $form
             ->schema([
-                Section::make('Tambah Lowongan Kerja')
-                    ->description('Silahkan isi form berikut untuk menambahkan lowongan kerja.')
+                Section::make(app()->getLocale() == 'id' ? 'Tambah Lowongan Kerja' : 'Add Job Vacancy')
+                    ->description(app()->getLocale() == 'id' ? 'Silahkan isi form berikut untuk menambahkan lowongan kerja.' : 'Please fill in the following form to add job vacancies')
                     ->schema([
                         // category id
                         Forms\Components\Select::make('category_id')
-                            ->label('Category')
+                            ->label(app()->getLocale() == 'id' ? 'Kategori' : 'Category')
                             ->relationship('category', 'name')
                             ->required()
-                            ->placeholder('Select category')
+                            ->placeholder(app()->getLocale() == 'id' ? 'Pilih Kategori' : 'Select category')
                             ->rules(['required']),
                         Forms\Components\FileUpload::make('image')
-                        ->image()
-                        ->avatar()
-                        ->previewable(true)
-                        ->imageEditor()
-                        ->imageEditorViewportWidth('1920')
-                        ->imageEditorViewportHeight('1080')
-                        ->maxWidth('w-80')
-                        ->rules(['nullable', 'image', 'max:1024']),
+                            ->label(app()->getLocale() == 'id' ? 'Gambar' : 'Image')
+                            ->image()
+                            ->avatar()
+                            ->previewable(true)
+                            ->imageEditor()
+                            ->imageEditorViewportWidth('1920')
+                            ->imageEditorViewportHeight('1080')
+                            ->maxWidth('w-80')
+                            ->rules(['nullable', 'image', 'max:1024']),
                         Forms\Components\TextInput::make('title')
                             ->label('Title')
                             ->required()
-                            ->placeholder('Enter title')
                             ->live()
                             ->afterStateUpdated(function (Get $get, Set $set, ?string $old, ?string $state) {
                                 if (($get('slug') ?? '') !== Str::slug($old)) {
@@ -74,30 +70,29 @@ class JobVacancyResource extends Resource
                         // slug auto generate from title
                         Forms\Components\TextInput::make('slug')
                             ->label('Slug')
-                            ->disabled()
-                            ->placeholder('Enter slug'),
+                            ->disabled(),
                         Forms\Components\RichEditor::make('description')
-                            ->label('Description')
+                            ->label(app()->getLocale() == 'id' ? 'deskripsi' : 'Description')
                             ->required()
-                            ->placeholder('Enter description')
+                            ->placeholder(app()->getLocale() == 'id' ? 'Masukkan Deskripsi' : 'Enter Description')
                             ->rules(['required']),
                         Forms\Components\TextInput::make('work_hours')
-                            ->label('Work Hours')
+                            ->label(app()->getLocale() == 'id' ? 'Jam Kerja' : 'Work Hours')
                             ->required()
-                            ->placeholder('Enter work hours')
+                            ->placeholder(app()->getLocale() == 'id' ? 'Masukkan Jam Kerja' : 'Enter Work Hours')
                             ->rules(['required', 'max:255']),
                         Forms\Components\TextInput::make('location')
-                            ->label('Location')
+                            ->label(app()->getLocale() == 'id' ? 'Alamat Pekerjaan' : 'Location')
                             ->required()
-                            ->placeholder('Enter location')
+                            ->placeholder(app()->getLocale() == 'id' ? 'Alamat Pekerjaan' : 'Enter Location')
                             ->rules(['required', 'max:255']),
                         Forms\Components\RichEditor::make('qualifications')
-                            ->label('Qualifications')
+                            ->label(app()->getLocale() == 'id' ? 'Kualifikasi :' : 'Qualifications :')
                             ->required()
-                            ->placeholder('Enter qualifications')
+                            ->placeholder(app()->getLocale() == 'id' ? 'Masukkan Kualifikasi :' : 'Enter Qualifications :')
                             ->rules(['required']),
                         Datepicker::make('valid_until')
-                            ->label('Valid Until')
+                            ->label(app()->getLocale() == 'id' ? 'Berlaku Sampai' : 'Valid Until')
                             ->required()
                             ->rules(['required']),
                         // Forms\Components\Datepicker::make('valid_until')
@@ -105,21 +100,21 @@ class JobVacancyResource extends Resource
                         //     ->required()
                         //     ->rules(['required']),
                         Forms\Components\Select::make('experience')
-                        ->label('Experience')
-                        ->options([
-                            'junior' => 'Junior',
-                            'intermediate' => 'Intermediate',
-                            'senior' => 'Senior',
-                        ])
-                        ->placeholder('Select experience'),
+                            ->label(app()->getLocale() == 'id' ? 'Pengalaman' : 'Experience')
+                            ->options([
+                                'junior' => 'Junior',
+                                'intermediate' => 'Intermediate',
+                                'senior' => 'Senior',
+                            ])
+                            ->placeholder(app()->getLocale() == 'id' ? 'Pilih Pengalaman' : 'Select experience'),
                         Forms\Components\Toggle::make('remote')
                             ->label('Remote')
                             ->default(false),
                         Forms\Components\Toggle::make('enable')
-                            ->label('Enable')
+                            ->label(app()->getLocale() == 'id' ? 'Mengizinkan' : 'Enable')
                             ->default(true),
                     ])
-                ]);
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -127,7 +122,7 @@ class JobVacancyResource extends Resource
         return $table
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make('create')
-                    ->label('Tambah Lowongan Kerja')
+                    ->label(app()->getLocale() == 'id' ? 'Tambah Lowongan Kerja' : 'Add Job Vacancy')
                     ->icon('heroicon-o-briefcase')
                     ->url('/admin/job-vacancies/create')
                     ->button(),
@@ -138,19 +133,19 @@ class JobVacancyResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('description')
+                    ->label(app()->getLocale() == 'id' ? 'Deskripsi' : 'Description')
                     ->limit(50) // Batasi 50 karakter
-                    ->label('Description')
                     ->html(),
                 Tables\Columns\TextColumn::make('qualifications')
-                    ->label('Qualifications')
+                    ->label(app()->getLocale() == 'id' ? 'Kualifikasi' : 'Qualifications')
                     ->limit(50) // Batasi 50 karakter
                     ->html(),
                 Tables\Columns\TextColumn::make('valid_until')
-                    ->label('Valid Until')
+                    ->label(app()->getLocale() == 'id' ? 'Berlaku Sampai' : 'Valid Until')
                     ->date()
                     ->sortable(),
                 Tables\Columns\ToggleColumn::make('enable')
-                    ->label('Enable')
+                    ->label(app()->getLocale() == 'id' ? 'Mengizinkan' : 'Enable')
                     ->sortable(),
             ])
             ->filters([
@@ -164,11 +159,11 @@ class JobVacancyResource extends Resource
                         return $query
                             ->when(
                                 $data['created_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
                             )
                             ->when(
                                 $data['created_until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             );
                     })
                     ->indicateUsing(function (array $data): array {
@@ -197,7 +192,7 @@ class JobVacancyResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
-            // ->paginated([10, 25, 50, 100, 'all']);
+        // ->paginated([10, 25, 50, 100, 'all']);
     }
 
     public static function getRelations(): array
@@ -214,5 +209,36 @@ class JobVacancyResource extends Resource
             'create' => Pages\CreateJobVacancy::route('/create'),
             'edit' => Pages\EditJobVacancy::route('/{record}/edit'),
         ];
+    }
+
+    public static function getLabel(): ?string
+    {
+        $locale = app()->getLocale();
+        if ($locale == 'id') {
+            $result = 'Loker';
+        }else{
+            $result = 'Job Vacancy';
+        }
+        return $result;
+    }
+    public static function getNavigationGroup(): ?string
+    {
+        $locale = app()->getLocale();
+        if ($locale == 'id') {
+            $result = 'Data Master';
+        } else {
+            $result = 'Master Data';
+        }
+        return $result;
+    }
+    public static function getSlug(): string
+    {
+        $locale = app()->getLocale();
+        if ($locale == 'id') {
+            $result = 'master-data/loker';
+        } else {
+            $result = 'data-master/job-vacancies';
+        }
+        return $result;
     }
 }

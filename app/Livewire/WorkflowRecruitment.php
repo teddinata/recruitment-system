@@ -3,12 +3,15 @@
 namespace App\Livewire;
 
 use stdClass;
+use Carbon\Carbon;
 use Filament\Tables;
 use Livewire\Component;
 use App\Models\UserApplyJob;
+use App\Mail\SendMailAccepted;
 use App\Enums\StageRecruitment;
 use App\Enums\StatusRecruitment;
 use Filament\Tables\Actions\Action;
+use Illuminate\Support\Facades\Mail;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Contracts\HasTable;
@@ -23,6 +26,7 @@ use App\Filament\Resources\RecruitmentResource\Pages\ViewRecruitment;
 use App\Filament\Resources\RecruitmentResource\Pages\EditRecruitmentValid;
 use App\Filament\Resources\RecruitmentResource\Pages\EditRecruitmentInterview;
 use App\Filament\Resources\RecruitmentResource\Pages\EditRecruitmentInterviewResult;
+use App\Mail\SendMailRejected;
 
 class WorkflowRecruitment extends Component implements HasForms, HasTable
 {
@@ -84,7 +88,7 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                     case 'Activity_1frsqol': // filter data pelamar yang di undang wawancara user -> Input Hasil Interview User
                         return $query->whereHas(
                             'interview',
-                            fn (Builder $subQuery) =>
+                            fn(Builder $subQuery) =>
                             $subQuery->where('is_invited', 'yes')->where('interview_type', 'user')->whereDoesntHave('interviewResult')
                         );
                         break;
@@ -92,20 +96,20 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                         return $query->whereHas('interview', function (Builder $subQuery) {
                             $subQuery->where('is_invited', 'yes')
                                 ->where('interview_type', 'user')
-                                ->whereHas('interviewResult', fn (Builder $subQuery2) => $subQuery2->where('is_success', 'no'));
+                                ->whereHas('interviewResult', fn(Builder $subQuery2) => $subQuery2->where('is_success', 'no'));
                         })->has('interview', '=', 1);
                         break;
                     case 'Activity_0y70sst': // filter data pelamar lulus tahap wawancara user -> Input jadwal Interview HR
                         return $query->whereHas('interview', function (Builder $subQuery) {
                             $subQuery->where('is_invited', 'yes')
                                 ->where('interview_type', 'user')
-                                ->whereHas('interviewResult', fn (Builder $subQuery2) => $subQuery2->where('is_success', 'yes'));
+                                ->whereHas('interviewResult', fn(Builder $subQuery2) => $subQuery2->where('is_success', 'yes'));
                         })->has('interview', '=', 1);
                         break;
                     case 'Activity_0qi07gz': // filter data pelamar yang diundang wawancara hr -> Input Hasil Interview HR
                         return $query->whereHas(
                             'interview',
-                            fn (Builder $subQuery) =>
+                            fn(Builder $subQuery) =>
                             $subQuery->where('is_invited', 'yes')->where('interview_type', 'hr')->whereDoesntHave('interviewResult')
                         );
                         break;
@@ -113,28 +117,25 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                         return $query->whereHas('interview', function (Builder $subQuery) {
                             $subQuery->where('is_invited', 'yes')
                                 ->where('interview_type', 'hr')
-                                ->whereHas('interviewResult', fn (Builder $subQuery2) => $subQuery2->where('is_success', 'no'));
+                                ->whereHas('interviewResult', fn(Builder $subQuery2) => $subQuery2->where('is_success', 'no'));
                         });
                         break;
                     case 'Activity_00fjfo4': // filter data pelamar lulus tahap wawancara hr -> Input Hasil Akhir
                         return $query->whereHas('interview', function (Builder $subQuery) {
                             $subQuery->where('is_invited', 'yes')
                                 ->where('interview_type', 'hr')
-                                ->whereHas('interviewResult', fn (Builder $subQuery2) => $subQuery2->where('is_success', 'yes'));
+                                ->whereHas('interviewResult', fn(Builder $subQuery2) => $subQuery2->where('is_success', 'yes'));
                         });
                         break;
-                        // case 'Gateway_1awh5yc':
-                        //     $query->where('column_name', 'Exclusive Gateway');
+                        // default:
+                        //     return $query->whereNot(function (Builder $subQuery) {
+                        //         $subQuery->whereIn('acceptance_status', [
+                        //             StatusRecruitment::FAILED->value,
+                        //             StatusRecruitment::REJECTED->value,
+                        //             StatusRecruitment::ACCEPTED->value
+                        //         ]);
+                        //     });
                         //     break;
-                    default:
-                        return $query->whereNot(function (Builder $subQuery) {
-                            $subQuery->whereIn('acceptance_status', [
-                                StatusRecruitment::FAILED->value,
-                                StatusRecruitment::REJECTED->value,
-                                StatusRecruitment::ACCEPTED->value
-                            ]);
-                        });
-                        break;
                 }
             }
         }
@@ -155,26 +156,26 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                 Tables\Columns\TextColumn::make('No')
                     ->rowIndex(),
                 Tables\Columns\TextColumn::make('jobVacancy.title')
-                    ->label('Job Position')
+                    ->label(app()->getLocale() == 'id' ? 'Posisi Pekerjaan' : 'Job Position')
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('cv_path')
-                    ->label('Resume Attachment')
+                    ->label(app()->getLocale() == 'id' ? 'CV' : 'Resume Attachment')
                     ->formatStateUsing(function ($state) {
                         return '<a href="' . asset('storage/' . $state) . '" target="_blank">Lihat CV</a>';
                     })
                     ->html()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('full_name')
-                    ->label('Full Name')
+                    ->label(app()->getLocale() == 'id' ? 'Nama Lengkap' : 'Full Name')
                     ->state(function ($record) {
                         return $record->first_name . ' ' . $record->last_name;
                     })
                     ->searchable(['first_name', 'last_name'])
                     ->sortable(['first_name', 'last_name']),
                 Tables\Columns\TextColumn::make('gender')
-                    ->label('Gender')
-                    ->formatStateUsing(fn ($state) => ($state == 1) ? "Laki-Laki" : "Perempuan"),
+                    ->label(app()->getLocale() == 'id' ? 'Jenis Kelamin' : 'Gender')
+                    ->formatStateUsing(fn($state) => (app()->getLocale() == 'id') ? (($state == 1) ? "Laki-Laki" : "Perempuan") : (($state == 1) ? "Male" : "Female")),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
                     ->searchable()
@@ -185,25 +186,25 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('current_stage')
-                    ->label('Current Stage')
+                    ->label(app()->getLocale() == 'id' ? 'Tahap Saat Ini' : 'Current Stage')
                     ->badge()
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('phone_number')
-                    ->label('Phone Number')
+                    ->label(app()->getLocale() == 'id' ? 'No Telepon' : 'Phone Number')
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('place_and_date_birth')
-                    ->label('Place, Date of Birth')
+                    ->label(app()->getLocale() == 'id' ? 'Tempat, Tanggal Lahir' : 'Place, Date of Birth')
                     ->getStateUsing(function ($record) {
                         return $record->place_of_birth . ', ' . $record->date_of_birth;
                     })
-                    ->searchable()
-                    ->sortable()
+                    ->searchable(['place_of_birth', 'date_of_birth'])
+                    ->sortable(['place_of_birth', 'date_of_birth'])
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('old_company')
-                    ->label('Old Company')
+                    ->label(app()->getLocale() == 'id' ? 'Perusahaan Sebelumnya' : 'Old Company')
                     ->searchable()
                     ->sortable()
                     ->default('-')
@@ -214,26 +215,27 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                 //
             ])
             ->toggleColumnsTriggerAction(
-                fn (Action $action) => $action
+                fn(Action $action) => $action
                     ->button()
-                    ->label('Toggle columns'),
+                    ->label(app()->getLocale() == 'id' ? 'Beralih Kolom' : 'Toggle columns'),
             )
-            ->recordUrl(fn (Model $record) => ViewRecruitment::getUrl([$record->id]))
+            ->recordUrl(fn(Model $record) => ViewRecruitment::getUrl([$record->id]))
             ->actions([
                 Tables\Actions\Action::make('Review')
+                    ->label(app()->getLocale() == 'id' ? 'Tinjauan' : 'Review')
                     ->icon('heroicon-s-eye')
-                    ->url(fn (Model $record) => EditRecruitmentValid::getUrl([$record->id]))
-                    ->visible(fn ($record) => (is_null($record->is_valid))),
+                    ->url(fn(Model $record) => EditRecruitmentValid::getUrl([$record->id]))
+                    ->visible(fn($record) => (is_null($record->is_valid))),
                 Tables\Actions\Action::make('Invite to Interview')
                     ->label(function ($record) {
                         if ($record->interview->count() == 0 && $record->is_valid == "yes") {
-                            return "Invite to User Interview";
+                            return app()->getLocale() == 'id' ? 'Undang Wawancara User' : "Invite to User Interview";
                         } elseif ($record->interview->count() == 1 && $record->interview->first()->interviewResult == true) {
-                            return "Invite to HR Interview";
+                            return app()->getLocale() == 'id' ? 'Undang Wawancara HR' : "Invite to HR Interview";
                         }
                     })
                     ->icon('heroicon-s-phone')
-                    ->url(fn (Model $record) => EditRecruitmentInterview::getUrl([$record->id]))
+                    ->url(fn(Model $record) => EditRecruitmentInterview::getUrl([$record->id]))
                     ->visible(function ($record) {
                         if ($record->interview->count() == 0 && $record->is_valid == "yes") {
                             return true;
@@ -245,13 +247,13 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                 Tables\Actions\Action::make('Interview Result')
                     ->label(function ($record) {
                         if ($record->interview->count() == 1 && $record->interview->first()->interviewResult == false) {
-                            return "User Interview Result";
+                            return app()->getLocale() == 'id' ? 'Hasil Wawancara User' : "User Interview Result";
                         } else if ($record->interview->count() == 2 && $record->interview->last()->interviewResult == false) {
-                            return "HR Interview Result";
+                            return app()->getLocale() == 'id' ? 'Hasil Wawancara HR' : "HR Interview Result";
                         }
                     })
                     ->icon('heroicon-s-clipboard-document')
-                    ->url(fn (Model $record) => EditRecruitmentInterviewResult::getUrl([$record->id]))
+                    ->url(fn(Model $record) => EditRecruitmentInterviewResult::getUrl([$record->id]))
                     ->visible(function ($record) {
                         if ($record->interview->count() == 1 && $record->interview->first()->interviewResult == false) {
                             return true;
@@ -262,14 +264,17 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                         }
                     }),
                 Tables\Actions\Action::make('Accepted')
+                    ->label(app()->getLocale() == 'id' ? 'Terima' : 'Accepted')
                     ->color('success')
                     ->icon('heroicon-s-check-circle')
                     ->action(function ($record) {
 
                         $record->update([
                             'current_stage' => StageRecruitment::FDC->value,
-                            'acceptance_status' => StatusRecruitment::ACCEPTED->value
+                            'acceptance_status' => StatusRecruitment::ACCEPTED->value,
+                            'status_created_at' => Carbon::now(),
                         ]);
+                        $this->sendEmailAccepted($record);
                         Notification::make()
                             ->title('Saved successfully')
                             ->success()
@@ -290,13 +295,16 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                         }
                     }),
                 Tables\Actions\Action::make('Rejected')
+                    ->label(app()->getLocale() == 'id' ? 'Terima' : 'Rejected')
                     ->color('danger')
                     ->icon('heroicon-s-x-circle')
                     ->action(function ($record) {
                         $record->update([
                             'current_stage' => StageRecruitment::FD->value,
-                            'acceptance_status' => StatusRecruitment::REJECTED->value
+                            'acceptance_status' => StatusRecruitment::REJECTED->value,
+                            'status_created_at' => Carbon::now(),
                         ]);
+                        $this->sendEmailRejected($record);
                         Notification::make()
                             ->title('Saved successfully')
                             ->success()
@@ -326,6 +334,27 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+    protected function sendEmailAccepted($record): void
+    {
+        $dataRecord = $record;
+        $email = $record->email;
+        $response = Mail::to($email)->send(new SendMailAccepted($dataRecord));
+        // dd($response);
+    }
+
+    protected function sendEmailRejected($record): void
+    {
+        $dataRecord = $record;
+        $email = $record->email;
+        $dataSend = [
+            'first_name' => $record->first_name,
+            'last_name' => $record->last_name,
+            'job_title' => $record->job_title,
+            'email' => $record->email,
+        ];
+        $response = Mail::to($email)->send(new SendMailRejected($dataRecord));
+        // dd($response);
     }
     public function render()
     {

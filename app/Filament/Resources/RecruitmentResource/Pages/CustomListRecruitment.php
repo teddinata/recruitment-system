@@ -9,7 +9,7 @@ use App\Livewire\WorkflowRecruitment;
 use Illuminate\Database\Eloquent\Model;
 use App\Infolists\Components\LivewireEntry;
 use App\Filament\Resources\RecruitmentResource;
-
+use Illuminate\Contracts\Support\Htmlable;
 
 class CustomListRecruitment extends Page
 {
@@ -17,12 +17,13 @@ class CustomListRecruitment extends Page
 
     protected static string $view = 'filament.resources.recruitment-resource.pages.custom-list-recruitment';
 
-    protected static ?string $title = 'List Recruitments';
+    
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('add_candidate')
+            Actions\Action::make('create')
+            ->label(app()->getLocale() == 'id' ? 'Buat Baru' : 'Create New')
                     ->url(fn () => CreateRecruitment::getUrl())
         ];
     }
@@ -34,5 +35,16 @@ class CustomListRecruitment extends Page
                 LivewireEntry::make('table-filter-recruitment')
                     ->livewire(WorkflowRecruitment::class)
             ]);
+    }
+    // protected static ?string $title = 'List Recruitments';
+    public function getTitle(): string|Htmlable
+    {
+        $locale = app()->getLocale();
+        if($locale == 'id'){
+            $result = 'Daftar Rekruitmen';
+        }else{
+            $result = 'List Recruitments';
+        }
+        return $result;
     }
 }

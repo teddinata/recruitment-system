@@ -22,11 +22,7 @@ class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
 
-    protected static ?string $slug = 'data-master/categories';
-    
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-group';
-    
-    protected static ?string $navigationGroup = 'Master Data';
 
     protected static ?int $navigationSort = 1;
 
@@ -61,14 +57,13 @@ class CategoryResource extends Resource
         return $table
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make('create')
-                    ->label('Tambah Kategori')
+                    ->label(app()->getLocale() == 'id' ? 'Tambah Kategori' : 'Create Category')
                     ->icon('heroicon-o-academic-cap')
-                    ->url('/admin/categories/create')
                     ->button(),
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Kategori')
+                    ->label(app()->getLocale() == 'id' ? 'Kategori' : 'Categories')
                     ->searchable()
                     ->sortable(),
             ])
@@ -100,5 +95,41 @@ class CategoryResource extends Resource
             'create' => Pages\CreateCategory::route('/create'),
             'edit' => Pages\EditCategory::route('/{record}/edit'),
         ];
+    }
+
+
+
+    // protected static ?string $slug = 'data-master/categories';
+
+    //     protected static ?string $navigationGroup = 'Master Data';
+    public static function getLabel(): ?string
+    {
+        $locale = app()->getLocale();
+        if ($locale == 'id') {
+            $result = 'Kategori';
+        } else {
+            $result = 'Categories';
+        }
+        return $result;
+    }
+    public static function getNavigationGroup(): ?string
+    {
+        $locale = app()->getLocale();
+        if ($locale == 'id') {
+            $result = 'Data Master';
+        } else {
+            $result = 'Master Data';
+        }
+        return $result;
+    }
+    public static function getSlug(): string
+    {
+        $locale = app()->getLocale();
+        if ($locale == 'id') {
+            $result = 'master-data/Kategori';
+        } else {
+            $result = 'data-master/categories';
+        }
+        return $result;
     }
 }
