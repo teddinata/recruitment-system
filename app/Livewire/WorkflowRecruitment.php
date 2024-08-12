@@ -339,7 +339,6 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
     {
         $dataRecord = $record;
         $email = $record->email;
-        // $dataSend = $data;
         $response = Mail::to($email)->send(new SendMailAccepted($dataRecord));
         // dd($response);
     }
@@ -353,8 +352,6 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
             'last_name' => $record->last_name,
             'job_title' => $record->job_title,
             'email' => $record->email,
-            // Any additional data you might need
-            // 'is_invited' => $data['is_invited'],
         ];
         $response = Mail::to($email)->send(new SendMailRejected($dataRecord));
         // dd($response);
