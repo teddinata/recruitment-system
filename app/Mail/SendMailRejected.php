@@ -9,7 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class SendInterviewResult extends Mailable
+class SendMailRejected extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -19,11 +19,9 @@ class SendInterviewResult extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct($record, $data)
+    public function __construct($record)
     {
         $this->record = $record;
-        // $this->subject = $subject;
-        $this->data = $data;
     }
 
     /**
@@ -43,11 +41,9 @@ class SendInterviewResult extends Mailable
     {
         return new Content(
             // view: 'view.name',
-            markdown: 'emails.send-interview-result',
+            markdown: 'emails.send-mail-rejected',
             with: [
                 'record' => $this->record,
-                // 'subject' => $this->subject,
-                'data' => $this->data
             ]
         );
     }

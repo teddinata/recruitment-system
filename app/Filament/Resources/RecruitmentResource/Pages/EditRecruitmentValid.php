@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Model;
 use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\RecruitmentResource;
 use App\Actions\ProsesEditRecruitment\isValidAction;
+use App\Mail\SendMailNotValid;
+use App\Mail\SendMailValid;
 
 class EditRecruitmentValid extends EditRecord
 {
@@ -24,12 +26,13 @@ class EditRecruitmentValid extends EditRecord
                 $data['valid_created_at'] = Carbon::now();
                 $data['acceptance_status'] = StatusRecruitment::FAILED->value;
                 $record->update($data);
-                // $this->sendEmailNotInvited($record, $data);
+                $this->sendEmailNotValid($record, $data);
             } else {
                 $data['valid_created_at'] = Carbon::now();
                 $data['current_stage'] = StageRecruitment::DSC->value;
                 $data['acceptance_status'] = StatusRecruitment::PENDING->value;
                 $record->update($data);
+                $this->sendEmailValid($record, $data);
             }
         } catch (\Throwable $e) {
             throw $e;
@@ -43,7 +46,16 @@ class EditRecruitmentValid extends EditRecord
         return $this->getResource()::getUrl('index');
     }
 
-    protected function sendEmailNotInvited($record, $data): void
+    protected function sendEmailValid($record, $data): void
+    {
+        $dataRecord = $record;
+        $email = $record->email;
+        $dataSend = $data;
+        $response = Mail::to($email)->send(new SendMailValid($dataRecord, $dataSend));
+        // dd($response);
+    }
+
+    protected function sendEmailNotValid($record, $data): void
     {
         $dataRecord = $record;
         $email = $record->email;
@@ -55,7 +67,7 @@ class EditRecruitmentValid extends EditRecord
             // Any additional data you might need
             // 'is_invited' => $data['is_invited'],
         ];
-        Mail::to($email)->send(new SendMailNotInvited($dataRecord, $dataSend));
+        Mail::to($email)->send(new SendMailNotValid($dataRecord, $dataSend));
         // dd($response);
     }
 }

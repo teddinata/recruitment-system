@@ -9,25 +9,19 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class SendMailNotInvited extends Mailable
+class SendMailAccepted extends Mailable
 {
     use Queueable, SerializesModels;
 
-    private string $name;
-    private string $body;
     public ?array $data;
     public $record;
     public $subject;
     /**
      * Create a new message instance.
      */
-    public function __construct($record, $data)
+    public function __construct($record)
     {
         $this->record = $record;
-        // $this->subject = $subject;
-        $this->data = $data;
-
-        $this->subject = 'Informasi Proses Seleksi Viscus Media Dharma';
     }
 
     /**
@@ -46,12 +40,10 @@ class SendMailNotInvited extends Mailable
     public function content(): Content
     {
         return new Content(
-            // view: "emails.send-mail",
-            markdown: 'emails.send-mail-not-invited',
+            // view: 'view.name',
+            markdown: 'emails.send-mail-accepted',
             with: [
                 'record' => $this->record,
-                // 'subject' => $this->subject,
-                'data' => $this->data
             ]
         );
     }

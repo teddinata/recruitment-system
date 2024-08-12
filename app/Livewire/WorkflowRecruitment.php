@@ -3,12 +3,15 @@
 namespace App\Livewire;
 
 use stdClass;
+use Carbon\Carbon;
 use Filament\Tables;
 use Livewire\Component;
 use App\Models\UserApplyJob;
+use App\Mail\SendMailAccepted;
 use App\Enums\StageRecruitment;
 use App\Enums\StatusRecruitment;
 use Filament\Tables\Actions\Action;
+use Illuminate\Support\Facades\Mail;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Contracts\HasTable;
@@ -23,7 +26,7 @@ use App\Filament\Resources\RecruitmentResource\Pages\ViewRecruitment;
 use App\Filament\Resources\RecruitmentResource\Pages\EditRecruitmentValid;
 use App\Filament\Resources\RecruitmentResource\Pages\EditRecruitmentInterview;
 use App\Filament\Resources\RecruitmentResource\Pages\EditRecruitmentInterviewResult;
-use Carbon\Carbon;
+use App\Mail\SendMailRejected;
 
 class WorkflowRecruitment extends Component implements HasForms, HasTable
 {
@@ -271,6 +274,7 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                             'acceptance_status' => StatusRecruitment::ACCEPTED->value,
                             'status_created_at' => Carbon::now(),
                         ]);
+                        $this->sendEmailAccepted($record);
                         Notification::make()
                             ->title('Saved successfully')
                             ->success()
@@ -300,6 +304,7 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                             'acceptance_status' => StatusRecruitment::REJECTED->value,
                             'status_created_at' => Carbon::now(),
                         ]);
+                        $this->sendEmailRejected($record);
                         Notification::make()
                             ->title('Saved successfully')
                             ->success()
@@ -329,6 +334,30 @@ class WorkflowRecruitment extends Component implements HasForms, HasTable
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+    protected function sendEmailAccepted($record): void
+    {
+        $dataRecord = $record;
+        $email = $record->email;
+        // $dataSend = $data;
+        $response = Mail::to($email)->send(new SendMailAccepted($dataRecord));
+        // dd($response);
+    }
+
+    protected function sendEmailRejected($record): void
+    {
+        $dataRecord = $record;
+        $email = $record->email;
+        $dataSend = [
+            'first_name' => $record->first_name,
+            'last_name' => $record->last_name,
+            'job_title' => $record->job_title,
+            'email' => $record->email,
+            // Any additional data you might need
+            // 'is_invited' => $data['is_invited'],
+        ];
+        $response = Mail::to($email)->send(new SendMailRejected($dataRecord));
+        // dd($response);
     }
     public function render()
     {

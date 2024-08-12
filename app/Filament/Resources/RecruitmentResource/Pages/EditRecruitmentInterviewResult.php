@@ -2,17 +2,20 @@
 
 namespace App\Filament\Resources\RecruitmentResource\Pages;
 
+use Carbon\Carbon;
 use Filament\Actions;
+use App\Enums\InterviewType;
+use App\Mail\SendMailSuccess;
+use App\Enums\StageRecruitment;
+use App\Enums\StatusRecruitment;
+use App\Mail\SendMailNotInvited;
+use App\Mail\SendMailNotSuccess;
 use App\Mail\SendInterviewResult;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\RecruitmentResource;
 use App\Actions\ProsesEditRecruitment\isSuccessAction;
-use App\Enums\InterviewType;
-use App\Enums\StageRecruitment;
-use App\Enums\StatusRecruitment;
-use Carbon\Carbon;
 
 class EditRecruitmentInterviewResult extends EditRecord
 {
@@ -46,7 +49,7 @@ class EditRecruitmentInterviewResult extends EditRecord
                     ]);
                 }
 
-                // $this->sendEmailInformation($record, $data);
+                $this->sendEmailResult($record, $data);
             } else {
                 $data['acceptance_status'] = StatusRecruitment::FAILED->value;
                 $data['status_created_at'] = Carbon::now();
@@ -54,6 +57,7 @@ class EditRecruitmentInterviewResult extends EditRecord
                     'status_created_at' => $data['status_created_at'],
                     'acceptance_status' => $data['acceptance_status'],
                 ]);
+                $this->sendEmailNotResult($record, $data);
             }
         } catch (\Throwable $e) {
             throw $e;
@@ -66,11 +70,28 @@ class EditRecruitmentInterviewResult extends EditRecord
         return $this->getResource()::getUrl('index');
     }
 
-    protected function sendEmailInformation($record, $data): void
+    protected function sendEmailResult($record, $data): void
     {
+        
         $dataRecord = $record;
         $email = $record->email;
         $dataSend = $data;
-        $response = Mail::to($email)->send(new SendInterviewResult($dataRecord, $dataSend));
+        $response = Mail::to($email)->send(new SendMailSuccess($dataRecord, $dataSend));
+    }
+
+    protected function sendEmailNotResult($record, $data): void
+    {
+        $dataRecord = $record;
+        $email = $record->email;
+        $dataSend = [
+            'first_name' => $record->first_name,
+            'last_name' => $record->last_name,
+            'job_title' => $record->job_title,
+            'email' => $record->email,
+            // Any additional data you might need
+            // 'is_invited' => $data['is_invited'],
+        ];
+        Mail::to($email)->send(new SendMailNotSuccess($dataRecord, $dataSend));
+        // dd($response);
     }
 }

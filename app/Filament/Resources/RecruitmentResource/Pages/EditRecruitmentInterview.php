@@ -3,11 +3,13 @@
 namespace App\Filament\Resources\RecruitmentResource\Pages;
 
 use Carbon\Carbon;
-use App\Mail\SendMail;
 use App\Enums\InterviewType;
+use App\Mail\SendMailInvited;
 use App\Enums\StageRecruitment;
 use App\Enums\StatusRecruitment;
 use App\Mail\SendMailNotInvited;
+use App\Mail\SendMailNotInvitedHR;
+use App\Mail\SendMailNotInvitedUser;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Resources\Pages\EditRecord;
@@ -50,8 +52,7 @@ class EditRecruitmentInterview extends EditRecord
                         'acceptance_status' => $data['acceptance_status'],
                     ]);
                 }
-
-                // $this->sendEmailInformation($record, $data);
+                $this->sendEmailInvited($record, $data);
             } else {
                 $data['acceptance_status'] = StatusRecruitment::FAILED->value;
                 $data['status_created_at'] = Carbon::now();
@@ -59,8 +60,7 @@ class EditRecruitmentInterview extends EditRecord
                     'status_created_at' => $data['status_created_at'],
                     'acceptance_status' => $data['acceptance_status'],
                 ]);
-                // send email not invited
-                // $this->sendEmailNotInvited($record, $data);
+                $this->sendEmailNotInvited($record, $data);
             }
         } catch (\Throwable $e) {
             throw $e;
@@ -73,12 +73,12 @@ class EditRecruitmentInterview extends EditRecord
         return $this->getResource()::getUrl('index');
     }
 
-    protected function sendEmailInformation($record, $data): void
+    protected function sendEmailInvited($record, $data): void
     {
         $dataRecord = $record;
         $email = $record->email;
         $dataSend = $data;
-        $response = Mail::to($email)->send(new SendMail($dataRecord, $dataSend));
+        $response = Mail::to($email)->send(new SendMailInvited($dataRecord, $dataSend));
         // dd($response);
     }
 
@@ -94,7 +94,11 @@ class EditRecruitmentInterview extends EditRecord
             // Any additional data you might need
             'is_invited' => $data['is_invited'],
         ];
-        $response = Mail::to($email)->send(new SendMailNotInvited($dataRecord, $dataSend));
+        if ($data['interview_type'] == InterviewType::USER->value) {
+            $response = Mail::to($email)->send(new SendMailNotInvitedUser($dataRecord, $dataSend));
+        } else if ($data['interview_type'] == InterviewType::HR->value) {
+            $response = Mail::to($email)->send(new SendMailNotInvitedHR($dataRecord, $dataSend));
+        }
         // dd($response);
     }
 }
