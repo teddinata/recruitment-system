@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Request;
 use App\Filament\Resources\RecruitmentResource\Pages;
 use App\Filament\Resources\RecruitmentResource\Pages\EditRecruitment;
 use App\Filament\Resources\RecruitmentResource\Pages\ViewRecruitment;
+use Joaopaulolndev\FilamentPdfViewer\Infolists\Components\PdfViewerEntry;
 use App\Filament\Resources\RecruitmentResource\Pages\EditRecruitmentValid;
 use App\Filament\Resources\RecruitmentResource\Pages\EditRecruitmentInterview;
 use App\Filament\Resources\RecruitmentResource\Pages\EditRecruitmentInterviewResult;
@@ -369,9 +370,12 @@ class RecruitmentResource extends Resource
                                     Infolists\Components\TextEntry::make('old_company')
                                         ->label(app()->getLocale() == 'id' ? 'Perusahaan Sebelumnya' : 'Old Company'),
                                 ]),
-                                Infolists\Components\ImageEntry::make('cv_path')
-                                    ->label(app()->getLocale() == 'id' ? 'Lampiran Peralamar' : 'Applicant attachments')
-                                    ->grow(false),
+                                // Infolists\Components\ImageEntry::make('cv_path')
+                                //     ->label(app()->getLocale() == 'id' ? 'Lampiran Peralamar' : 'Applicant attachments')
+                                //     ->grow(false),
+                                PdfViewerEntry::make('cv_path')
+                                    ->label('View the PDF')
+                                    ->minHeight('40svh')
                             ]),
                         Infolists\Components\Fieldset::make(app()->getLocale() == 'id' ? 'Tentang Diri Pelamar' : 'Self Description')
                             ->schema([
